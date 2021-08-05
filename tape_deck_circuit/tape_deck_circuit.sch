@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:tape_deck_circuit-cache
 EELAYER 30 0
 EELAYER END
 $Descr USLetter 11000 8500
@@ -14,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L MCU_Module:Arduino_Nano_v3.x A?
+L tape_deck_circuit-rescue:Arduino_Nano_v3.x-MCU_Module A?
 U 1 1 6105AC23
 P 2200 3950
 F 0 "A?" H 1900 5200 50  0000 C CNN
@@ -201,10 +202,6 @@ F 3 "" H 5800 5100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5200 4700 5100 4700
-Wire Wire Line
-	5100 4700 5100 5000
-Wire Wire Line
 	5100 5000 5800 5000
 Wire Wire Line
 	5800 5100 5800 5000
@@ -212,8 +209,7 @@ Connection ~ 5800 5000
 Wire Wire Line
 	5200 4400 5100 4400
 Wire Wire Line
-	5100 4400 5100 4700
-Connection ~ 5100 4700
+	5100 4400 5100 4600
 $Comp
 L power:+15V #PWR?
 U 1 1 610932D2
@@ -303,10 +299,6 @@ Text Label 3200 4150 2    50   ~ 0
 ~LATCH
 Wire Wire Line
 	2700 4150 3200 4150
-Text Label 4700 4600 0    50   ~ 0
-~LATCH
-Wire Wire Line
-	4700 4600 5200 4600
 Text Label 1200 3950 0    50   ~ 0
 PLAY
 Text Label 1200 4050 0    50   ~ 0
@@ -729,4 +721,22 @@ Text Label 3200 3750 2    50   ~ 0
 GATE
 Wire Wire Line
 	2700 3750 3200 3750
+Wire Wire Line
+	5200 4600 5100 4600
+Connection ~ 5100 4600
+Wire Wire Line
+	5100 4600 5100 5000
+$Comp
+L power:+5V #PWR?
+U 1 1 610A8E36
+P 4900 4700
+F 0 "#PWR?" H 4900 4550 50  0001 C CNN
+F 1 "+5V" H 4915 4873 50  0000 C CNN
+F 2 "" H 4900 4700 50  0001 C CNN
+F 3 "" H 4900 4700 50  0001 C CNN
+	1    4900 4700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4900 4700 5200 4700
 $EndSCHEMATC
