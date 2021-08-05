@@ -21,7 +21,6 @@
     Public Defines
  *=====================================================================*/
 #define MCP41HVX1_SPI_CLK_HZ        (100e3)
-#define PIN_MCP41HVX1_CS            (5)
 
 
 /*=====================================================================*
@@ -34,8 +33,9 @@
  *
  *  DESCRIPTION
  *      Initializes the Arduino SPI hardware used to run the MCP41HVx1
+ *      Assigns the chip select to the given pin number
  *---------------------------------------------------------------------*/
-void mcp41hvx1_init();
+void mcp41hvx1_init(uint8_t pin_chip_select);
 
 /*---------------------------------------------------------------------*
  *  NAME
