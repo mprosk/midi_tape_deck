@@ -48,8 +48,11 @@
  *---------------------------------------------------------------------*/
 void mcp41hvx1_init()
 {
+    pinMode(PIN_MCP41HVX1_CS, OUTPUT);
+    digitalWrite(PIN_MCP41HVX1_CS, HIGH);
+
     SPI.begin();
-    SPI.beginTransaction(SPISettings(MCP41HVx1_SPI_CLK_HZ, LSBFIRST, SPI_MODE0));
+    SPI.beginTransaction(SPISettings(MCP41HVX1_SPI_CLK_HZ, MSBFIRST, SPI_MODE0));
 }
 
 /*---------------------------------------------------------------------*
@@ -61,7 +64,9 @@ void mcp41hvx1_init()
  *---------------------------------------------------------------------*/
 void mcp41hvx1_increment(void)
 {
+    digitalWrite(PIN_MCP41HVX1_CS, LOW);
     SPI.transfer(0x04);
+    digitalWrite(PIN_MCP41HVX1_CS, HIGH);
 }
 
 /*---------------------------------------------------------------------*
@@ -73,7 +78,9 @@ void mcp41hvx1_increment(void)
  *---------------------------------------------------------------------*/
 void mcp41hvx1_decrement(void)
 {
+    digitalWrite(PIN_MCP41HVX1_CS, LOW);
     SPI.transfer(0x08);
+    digitalWrite(PIN_MCP41HVX1_CS, HIGH);
 }
 
 /*---------------------------------------------------------------------*
@@ -86,7 +93,9 @@ void mcp41hvx1_decrement(void)
 void mcp41hvx1_set(uint8_t index)
 {
     uint8_t buf[2] = {0x00, index};
+    digitalWrite(PIN_MCP41HVX1_CS, LOW);
     SPI.transfer(buf, 2);
+    digitalWrite(PIN_MCP41HVX1_CS, HIGH);
 }
 
 /*---------------------------------------------------------------------*
@@ -102,6 +111,8 @@ void mcp41hvx1_set(uint8_t index)
 uint8_t mcp41hvx1_get(void)
 {
     uint8_t buf[2] = {0x0c, 0x00};
+    digitalWrite(PIN_MCP41HVX1_CS, LOW);
     SPI.transfer(buf, 2);
+    digitalWrite(PIN_MCP41HVX1_CS, HIGH);
     return buf[1];
 }
