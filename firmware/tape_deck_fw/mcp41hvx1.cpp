@@ -1,6 +1,9 @@
 /***********************************************************************
  *  DESCRIPTION
  *      Driver for the MCP41HVx1 digital potentiometer
+ * 
+ *      Requires that the SPI bus be initialized and the
+ *      output pins for chip select configured
  *
  *  REFERENCES
  *      MCP41HVx1 Datasheet - Microchip Technology Inc.
@@ -13,49 +16,8 @@
 
 
 /*=====================================================================*
-    Private Defines
- *=====================================================================*/
-/* None */
-
-
-/*=====================================================================*
-    Private Data Types
- *=====================================================================*/
-/* None */
-
-
-/*=====================================================================*
-    Private Function Prototypes
- *=====================================================================*/
-/* None */
-
-
-/*=====================================================================*
-    Private Data
- *=====================================================================*/
-static uint8_t chip_select = NULL;
-
-
-/*=====================================================================*
     Public Function Implementations
  *=====================================================================*/
-
-/*---------------------------------------------------------------------*
- *  NAME
- *      mcp41hvx1_init
- *
- *  DESCRIPTION
- *      Initializes the Arduino SPI hardware used to run the MCP41HVx1
- *---------------------------------------------------------------------*/
-void mcp41hvx1_init(uint8_t pin_chip_select)
-{
-    chip_select = pin_chip_select;
-    pinMode(chip_select, OUTPUT);
-    digitalWrite(chip_select, HIGH);
-
-    SPI.begin();
-    SPI.beginTransaction(SPISettings(MCP41HVX1_SPI_CLK_HZ, MSBFIRST, SPI_MODE0));
-}
 
 /*---------------------------------------------------------------------*
  *  NAME
@@ -64,11 +26,11 @@ void mcp41hvx1_init(uint8_t pin_chip_select)
  *  DESCRIPTION
  *      Increments the potentiometer wiper
  *---------------------------------------------------------------------*/
-void mcp41hvx1_increment(void)
+void mcp41hvx1_increment(uint8_t cs_pin)
 {
-    digitalWrite(chip_select, LOW);
+    digitalWrite(cs_pin, LOW);
     SPI.transfer(0x04);
-    digitalWrite(chip_select, HIGH);
+    digitalWrite(cs_pin, HIGH);
 }
 
 /*---------------------------------------------------------------------*
@@ -78,11 +40,11 @@ void mcp41hvx1_increment(void)
  *  DESCRIPTION
  *      Decrements the potentiometer wiper
  *---------------------------------------------------------------------*/
-void mcp41hvx1_decrement(void)
+void mcp41hvx1_decrement(uint8_t cs_pin)
 {
-    digitalWrite(chip_select, LOW);
+    digitalWrite(cs_pin, LOW);
     SPI.transfer(0x08);
-    digitalWrite(chip_select, HIGH);
+    digitalWrite(cs_pin, HIGH);
 }
 
 /*---------------------------------------------------------------------*
@@ -92,12 +54,12 @@ void mcp41hvx1_decrement(void)
  *  DESCRIPTION
  *      Sets the potentiometer to the given tap index
  *---------------------------------------------------------------------*/
-void mcp41hvx1_set(uint8_t index)
+void mcp41hvx1_set(uint8_t cs_pin, uint8_t index)
 {
     uint8_t buf[2] = {0x00, index};
-    digitalWrite(chip_select, LOW);
+    digitalWrite(cs_pin, LOW);
     SPI.transfer(buf, 2);
-    digitalWrite(chip_select, HIGH);
+    digitalWrite(cs_pin, HIGH);
 }
 
 /*---------------------------------------------------------------------*
@@ -110,11 +72,11 @@ void mcp41hvx1_set(uint8_t index)
  *  RETURNS
  *      Current potentiometer tap index
  *---------------------------------------------------------------------*/
-uint8_t mcp41hvx1_get(void)
+uint8_t mcp41hvx1_get(uint8_t cs_pin)
 {
     uint8_t buf[2] = {0x0c, 0x00};
-    digitalWrite(chip_select, LOW);
+    digitalWrite(cs_pin, LOW);
     SPI.transfer(buf, 2);
-    digitalWrite(chip_select, HIGH);
+    digitalWrite(cs_pin, HIGH);
     return buf[1];
 }

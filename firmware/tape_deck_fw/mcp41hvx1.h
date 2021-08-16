@@ -1,6 +1,9 @@
 /***********************************************************************
  *  DESCRIPTION
  *      Driver for the MCP41HVx1 digital potentiometer
+ * 
+ *      Requires that the SPI bus be initialized and the
+ *      output pins for chip select configured
  *
  *  REFERENCES
  *      MCP41HVx1 Datasheet - Microchip Technology Inc.
@@ -29,22 +32,12 @@
 
 /*---------------------------------------------------------------------*
  *  NAME
- *      mcp41hvx1_init
- *
- *  DESCRIPTION
- *      Initializes the Arduino SPI hardware used to run the MCP41HVx1
- *      Assigns the chip select to the given pin number
- *---------------------------------------------------------------------*/
-void mcp41hvx1_init(uint8_t pin_chip_select);
-
-/*---------------------------------------------------------------------*
- *  NAME
  *      mcp41hvx1_increment
  *
  *  DESCRIPTION
  *      Increments the potentiometer wiper
  *---------------------------------------------------------------------*/
-void mcp41hvx1_increment(void);
+void mcp41hvx1_increment(uint8_t cs_pin);
 
 /*---------------------------------------------------------------------*
  *  NAME
@@ -53,7 +46,7 @@ void mcp41hvx1_increment(void);
  *  DESCRIPTION
  *      Decrements the potentiometer wiper
  *---------------------------------------------------------------------*/
-void mcp41hvx1_decrement(void);
+void mcp41hvx1_decrement(uint8_t cs_pin);
 
 /*---------------------------------------------------------------------*
  *  NAME
@@ -62,7 +55,7 @@ void mcp41hvx1_decrement(void);
  *  DESCRIPTION
  *      Sets the potentiometer to the given tap index
  *---------------------------------------------------------------------*/
-void mcp41hvx1_set(uint8_t index);
+void mcp41hvx1_set(uint8_t cs_pin, uint8_t index);
 
 /*---------------------------------------------------------------------*
  *  NAME
@@ -74,11 +67,7 @@ void mcp41hvx1_set(uint8_t index);
  *  RETURNS
  *      Current potentiometer tap index
  *---------------------------------------------------------------------*/
-uint8_t mcp41hvx1_get(void);
+uint8_t mcp41hvx1_get(uint8_t cs_pin);
 
 
 #endif /* !defined(INC_MCP41HVX1_H) */
-
-
-
-
