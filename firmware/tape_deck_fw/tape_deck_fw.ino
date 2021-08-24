@@ -31,8 +31,8 @@
  *=====================================================================*/
 #define PIN_INT_0                   (2)
 #define PIN_INT_1                   (3)
-#define PIN_POT_COARSE              (5)
-#define PIN_POT_FINE                (6)
+#define PIN_POT_COARSE              (A4)
+#define PIN_POT_FINE                (A5)
 #define PIN_LED                     (9)
 
 
@@ -184,6 +184,27 @@ void loop()
                 print_status();
                 break;
 
+            // INCREMENT
+            case ',':
+                mcp41hvx1_decrement(PIN_POT_FINE);
+                Serial.print("Decrement Fine: ");
+                print_status();
+                break;
+            case '.':
+                mcp41hvx1_increment(PIN_POT_FINE);
+                Serial.print("Increment Fine: ");
+                print_status();
+                break;
+
+            // RESET
+            // INCREMENT
+            case ' ':
+                mcp41hvx1_set(PIN_POT_COARSE, 128);
+                mcp41hvx1_set(PIN_POT_FINE, 128);
+                Serial.print("Reset: ");
+                print_status();
+                break;
+
             default:
                 break;
         }
@@ -206,7 +227,7 @@ void print_status(void)
 {
     Serial.print("Coarse: ");
     Serial.print(mcp41hvx1_get(PIN_POT_COARSE));
-    Serial.print("Fine: ");
+    Serial.print(" Fine: ");
     Serial.print(mcp41hvx1_get(PIN_POT_FINE));
     Serial.println();
 }
