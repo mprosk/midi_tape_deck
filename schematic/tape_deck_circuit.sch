@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:tape_deck_circuit-cache
 EELAYER 30 0
 EELAYER END
 $Descr USLetter 11000 8500
@@ -25,12 +26,12 @@ F 3 "http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf" H 3400 2900 50
 	-1   0    0    -1  
 $EndComp
 $Comp
-L midi_tape_deck:MCP41HVx1 U3
+L midi_tape_deck:MCP41HVx1 U2
 U 1 1 6108BB45
 P 7650 3000
-F 0 "U3" H 7300 3650 50  0000 C CNN
+F 0 "U2" H 7300 3650 50  0000 C CNN
 F 1 "MCP41HVx1" H 7300 3550 50  0000 C CNN
-F 2 "" H 7450 3150 50  0001 C CNN
+F 2 "midi_tape_deck:TSSOP_Breakout" H 7450 3150 50  0001 C CNN
 F 3 "" H 7450 3150 50  0001 C CNN
 	1    7650 3000
 	1    0    0    -1  
@@ -79,8 +80,6 @@ Text Label 4400 3500 2    50   ~ 0
 MISO
 Text Label 4400 3400 2    50   ~ 0
 MOSI
-Wire Wire Line
-	4400 3500 3900 3500
 Wire Wire Line
 	4400 3400 3900 3400
 $Comp
@@ -162,9 +161,9 @@ Wire Wire Line
 	8150 2300 8050 2300
 Wire Wire Line
 	7850 2300 7650 2300
-Text Label 4400 2500 2    50   ~ 0
-INT0
 Text Label 4400 2600 2    50   ~ 0
+INT1
+Text Label 4400 2500 2    50   ~ 0
 LEARN
 Wire Wire Line
 	4400 2500 3900 2500
@@ -179,14 +178,8 @@ MIDI_OUT
 Wire Wire Line
 	4400 2400 3900 2400
 NoConn ~ 3900 3300
-Text Label 4400 3100 2    50   ~ 0
-~LATCH
 Wire Wire Line
-	3900 3100 4400 3100
-Text Label 2400 2900 0    50   ~ 0
-PLAY
-Text Label 2400 3000 0    50   ~ 0
-STOP
+	2900 3300 2400 3300
 $Comp
 L Isolator:6N138 U1
 U 1 1 610AAE64
@@ -244,7 +237,7 @@ U 1 1 610B3218
 P 2100 5650
 F 0 "J1" H 2018 5967 50  0000 C CNN
 F 1 "MIDI IN" H 2018 5876 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x04_Pitch2.54mm" H 2100 5650 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 2100 5650 50  0001 C CNN
 F 3 "~" H 2100 5650 50  0001 C CNN
 	1    2100 5650
 	-1   0    0    -1  
@@ -346,17 +339,17 @@ Wire Wire Line
 	9200 3250 8300 3250
 Wire Wire Line
 	8300 3100 9200 3100
-Text Label 4400 3200 2    50   ~ 0
+Text Label 4400 2900 2    50   ~ 0
 LED
 Wire Wire Line
-	4400 3200 3900 3200
+	4400 2900 3900 2900
 $Comp
 L Device:LED D2
 U 1 1 610C8651
 P 6250 1250
 F 0 "D2" H 6243 995 50  0000 C CNN
 F 1 "LED" H 6243 1086 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 6250 1250 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 6250 1250 50  0001 C CNN
 F 3 "~" H 6250 1250 50  0001 C CNN
 	1    6250 1250
 	-1   0    0    1   
@@ -391,14 +384,10 @@ Wire Wire Line
 	6000 1250 6100 1250
 Wire Wire Line
 	6600 1250 6400 1250
-Wire Wire Line
-	2400 2900 2900 2900
-Wire Wire Line
-	2900 3000 2400 3000
-Text Label 4400 2700 2    50   ~ 0
+Text Label 2400 2900 0    50   ~ 0
 GATE
 Wire Wire Line
-	3900 2700 4400 2700
+	2900 2900 2400 2900
 Wire Wire Line
 	7000 3150 6900 3150
 Wire Wire Line
@@ -429,12 +418,12 @@ MOSI
 Text Label 6500 2650 0    50   ~ 0
 SCK
 $Comp
-L midi_tape_deck:MCP41HVx1 U2
+L midi_tape_deck:MCP41HVx1 U3
 U 1 1 61291371
 P 7600 5000
-F 0 "U2" H 7250 5650 50  0000 C CNN
+F 0 "U3" H 7250 5650 50  0000 C CNN
 F 1 "MCP41HVx1" H 7250 5550 50  0000 C CNN
-F 2 "" H 7400 5150 50  0001 C CNN
+F 2 "midi_tape_deck:TSSOP_Breakout" H 7400 5150 50  0001 C CNN
 F 3 "" H 7400 5150 50  0001 C CNN
 	1    7600 5000
 	1    0    0    -1  
@@ -566,7 +555,7 @@ U 1 1 6105BC26
 P 10200 4000
 F 0 "J2" H 10200 4350 50  0000 C CNN
 F 1 "SPEED POT" H 10200 4250 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x03_Pitch2.54mm" H 10200 4000 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 10200 4000 50  0001 C CNN
 F 3 "~" H 10200 4000 50  0001 C CNN
 	1    10200 4000
 	1    0    0    -1  
@@ -595,43 +584,74 @@ Text Label 9500 4000 0    50   ~ 0
 DPOT_W
 Wire Wire Line
 	9500 4000 10000 4000
-$Comp
-L Device:Jumper_NC_Small JP?
-U 1 1 61329052
-P 5100 3300
-F 0 "JP?" H 5100 3512 50  0000 C CNN
-F 1 "Jumper_NC_Small" H 5100 3421 50  0000 C CNN
-F 2 "" H 5100 3300 50  0001 C CNN
-F 3 "~" H 5100 3300 50  0001 C CNN
-	1    5100 3300
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:Jumper_NC_Small JP?
-U 1 1 6132985B
-P 5100 3600
-F 0 "JP?" H 5100 3812 50  0000 C CNN
-F 1 "Jumper_NC_Small" H 5100 3721 50  0000 C CNN
-F 2 "" H 5100 3600 50  0001 C CNN
-F 3 "~" H 5100 3600 50  0001 C CNN
-	1    5100 3600
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:Jumper_NC_Small JP?
-U 1 1 61329ACE
-P 5100 3900
-F 0 "JP?" H 5100 4112 50  0000 C CNN
-F 1 "Jumper_NC_Small" H 5100 4021 50  0000 C CNN
-F 2 "" H 5100 3900 50  0001 C CNN
-F 3 "~" H 5100 3900 50  0001 C CNN
-	1    5100 3900
-	1    0    0    -1  
-$EndComp
 Connection ~ 7600 4300
 Wire Wire Line
 	7600 4300 7600 4350
 Connection ~ 7650 2300
 Wire Wire Line
 	7650 2300 7650 2350
+Text Label 2400 3300 0    50   ~ 0
+CS1
+Text Label 2400 3400 0    50   ~ 0
+CS2
+Wire Wire Line
+	2400 3400 2900 3400
+Text Label 8300 5250 0    50   ~ 0
+POT_COM
+Wire Wire Line
+	4400 3500 3900 3500
+$Comp
+L Connector_Generic:Conn_01x03 J3
+U 1 1 6139A277
+P 1700 2000
+F 0 "J3" H 1700 2350 50  0000 C CNN
+F 1 "POWER" H 1700 2250 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 1700 2000 50  0001 C CNN
+F 3 "~" H 1700 2000 50  0001 C CNN
+	1    1700 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0119
+U 1 1 6139C45A
+P 1000 1750
+F 0 "#PWR0119" H 1000 1600 50  0001 C CNN
+F 1 "+5V" H 1015 1923 50  0000 C CNN
+F 2 "" H 1000 1750 50  0001 C CNN
+F 3 "" H 1000 1750 50  0001 C CNN
+	1    1000 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+15V #PWR0120
+U 1 1 6139C6F8
+P 1000 2500
+F 0 "#PWR0120" H 1000 2350 50  0001 C CNN
+F 1 "+15V" H 1015 2673 50  0000 C CNN
+F 2 "" H 1000 2500 50  0001 C CNN
+F 3 "" H 1000 2500 50  0001 C CNN
+	1    1000 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0121
+U 1 1 6139D73C
+P 1000 2000
+F 0 "#PWR0121" H 1000 1750 50  0001 C CNN
+F 1 "GND" H 1005 1827 50  0000 C CNN
+F 2 "" H 1000 2000 50  0001 C CNN
+F 3 "" H 1000 2000 50  0001 C CNN
+	1    1000 2000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1000 2000 1500 2000
+Wire Wire Line
+	1000 1750 1000 1900
+Wire Wire Line
+	1000 1900 1500 1900
+Wire Wire Line
+	1500 2100 1500 2500
+Wire Wire Line
+	1500 2500 1000 2500
 $EndSCHEMATC
