@@ -51,8 +51,10 @@
 /*=====================================================================*
     Private Function Prototypes
  *=====================================================================*/
-float freq(float x, float y);
+void repitch(uint8_t nominal, uint8_t target);
 uint8_t solve(float z, uint8_t *x, uint8_t *y);
+float freq(float x, float y);
+float freq_128(float x, float y);
 
 /*=====================================================================*
     Private Data
@@ -129,8 +131,8 @@ void print_status(void)
  *      repitch
  *
  *  DESCRIPTION
- *      sets the potentiometers to produce a target output note given
- *      the nominal note of the sample
+ *      sets the potentiometers to produce a target output
+ *      note given the nominal note of the sample
  *---------------------------------------------------------------------*/
 void repitch(uint8_t nominal, uint8_t target)
 {
