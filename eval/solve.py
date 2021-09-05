@@ -6,6 +6,9 @@ def freq_full(x, y):
 def freq(x, y):
     return -1917.6297514 + (16.9812525 * x) + (0.0848209 + 0.0264162 * x + 0.0073799 * y) * y
 
+def freq_128(x):
+    return 20.3625 * x - 1785.86
+
 
 def dump():
     with open('dump.csv', mode='w') as fp:
@@ -44,7 +47,7 @@ def solve(z):
     # get x close
     while True:
         x = (x_max + x_min) // 2
-        f = freq(x, y)
+        f = freq_128(x)
         print('Step {}, x = {} ({}, {}), f = {}'.format(n, x, x_min, x_max, f))
         n += 1
         if is_close(f, z, .01):
@@ -79,7 +82,7 @@ def solve(z):
 
 
 if __name__ == '__main__':
-    for z in [1950, -440, 3000, -840, -1000, 420]:
+    for z in [1950, -440, 3000, -840, -1000, 420, 0]:
         print()
         print('-' * 30)
         print("Solving for Z =", z)

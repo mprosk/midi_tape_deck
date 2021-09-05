@@ -18,12 +18,13 @@
     Interface Header Files
  *=====================================================================*/
 #include "mcp41hvx1.h"
+#include "midi.h"
+#include "notes.h"
 
 
 /*=====================================================================*
     System-wide Header Files
  *=====================================================================*/
-
 
 
 /*=====================================================================*
@@ -50,7 +51,8 @@
 /*=====================================================================*
     Private Function Prototypes
  *=====================================================================*/
-
+float freq(float x, float y);
+uint8_t solve(float z, uint8_t *x, uint8_t *y);
 
 /*=====================================================================*
     Private Data
@@ -81,134 +83,24 @@ void setup()
 
 void loop()
 {
-    Serial.println("Set Coarse: (1-9), Set Fine: (Q-O)");
-    print_status();
-
-    while (1)
+    // 880 Hz - A5
+    uint8_t notes[] = {81, 83, 84, 86, 88, 89, 91, 93};
+    for (uint8_t i = 0; i < 8; i++)
     {
-        while (!Serial.available()) {}
-        char c = Serial.read();
-        switch (c) {
-            
-            // COARSE
-            case '1':
-                mcp41hvx1_set(PIN_POT_COARSE, 0);
-                Serial.print("Set Coarse 0: ");
-                print_status();
-                break;
-            case '2':
-                mcp41hvx1_set(PIN_POT_COARSE, 32);
-                Serial.print("Set Coarse 32: ");
-                print_status();
-                break;
-            case '3':
-                mcp41hvx1_set(PIN_POT_COARSE, 64);
-                Serial.print("Set Coarse 64: ");
-                print_status();
-                break;
-            case '4':
-                mcp41hvx1_set(PIN_POT_COARSE, 96);
-                Serial.print("Set Coarse 96: ");
-                print_status();
-                break;
-            case '5':
-                mcp41hvx1_set(PIN_POT_COARSE, 128);
-                Serial.print("Set Coarse 128: ");
-                print_status();
-                break;
-            case '6':
-                mcp41hvx1_set(PIN_POT_COARSE, 160);
-                Serial.print("Set Coarse 160: ");
-                print_status();
-                break;
-            case '7':
-                mcp41hvx1_set(PIN_POT_COARSE, 192);
-                Serial.print("Set Coarse 192: ");
-                print_status();
-                break;
-            case '8':
-                mcp41hvx1_set(PIN_POT_COARSE, 224);
-                Serial.print("Set Coarse 224: ");
-                print_status();
-                break;
-            case '9':
-                mcp41hvx1_set(PIN_POT_COARSE, 255);
-                Serial.print("Set Coarse 255: ");
-                print_status();
-                break;
-
-            // FINE
-            case 'q':
-                mcp41hvx1_set(PIN_POT_FINE, 0);
-                Serial.print("Set Fine 0: ");
-                print_status();
-                break;
-            case 'w':
-                mcp41hvx1_set(PIN_POT_FINE, 32);
-                Serial.print("Set Fine 32: ");
-                print_status();
-                break;
-            case 'e':
-                mcp41hvx1_set(PIN_POT_FINE, 64);
-                Serial.print("Set Fine 64: ");
-                print_status();
-                break;
-            case 'r':
-                mcp41hvx1_set(PIN_POT_FINE, 96);
-                Serial.print("Set Fine 96: ");
-                print_status();
-                break;
-            case 't':
-                mcp41hvx1_set(PIN_POT_FINE, 128);
-                Serial.print("Set Fine 128: ");
-                print_status();
-                break;
-            case 'y':
-                mcp41hvx1_set(PIN_POT_FINE, 160);
-                Serial.print("Set Fine 160: ");
-                print_status();
-                break;
-            case 'u':
-                mcp41hvx1_set(PIN_POT_FINE, 192);
-                Serial.print("Set Fine 192: ");
-                print_status();
-                break;
-            case 'i':
-                mcp41hvx1_set(PIN_POT_FINE, 224);
-                Serial.print("Set Fine 224: ");
-                print_status();
-                break;
-            case 'o':
-                mcp41hvx1_set(PIN_POT_FINE, 255);
-                Serial.print("Set Fine 255: ");
-                print_status();
-                break;
-
-            // INCREMENT
-            case ',':
-                mcp41hvx1_decrement(PIN_POT_FINE);
-                Serial.print("Decrement Fine: ");
-                print_status();
-                break;
-            case '.':
-                mcp41hvx1_increment(PIN_POT_FINE);
-                Serial.print("Increment Fine: ");
-                print_status();
-                break;
-
-            // RESET
-            // INCREMENT
-            case ' ':
-                mcp41hvx1_set(PIN_POT_COARSE, 128);
-                mcp41hvx1_set(PIN_POT_FINE, 128);
-                Serial.print("Reset: ");
-                print_status();
-                break;
-
-            default:
-                break;
-        }
+        repitch(81, notes[i]);
+        delay(1000);
     }
+
+    // midi_note_t note;
+    // while(1)
+    // {
+    //     midi_note_event_t note_event = midi_read(&note);
+    //     if (note_event == EVENT_NOTE_ON)
+    //     {
+
+    //     }
+    // }
+
 }
 
 
@@ -218,10 +110,10 @@ void loop()
 
 /*---------------------------------------------------------------------*
  *  NAME
- *      
+ *      print_status
  *
  *  DESCRIPTION
- *      
+ *      prints the current potentiometer settings
  *---------------------------------------------------------------------*/
 void print_status(void)
 {
@@ -230,4 +122,131 @@ void print_status(void)
     Serial.print(" Fine: ");
     Serial.print(mcp41hvx1_get(PIN_POT_FINE));
     Serial.println();
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      repitch
+ *
+ *  DESCRIPTION
+ *      sets the potentiometers to produce a target output note given
+ *      the nominal note of the sample
+ *---------------------------------------------------------------------*/
+void repitch(uint8_t nominal, uint8_t target)
+{
+    float freq = get_note_freq(target) - get_note_freq(nominal);
+    uint8_t x, y = 128;
+    uint8_t n = solve(freq, &x, &y);
+    mcp41hvx1_set(PIN_POT_COARSE, x);
+    mcp41hvx1_set(PIN_POT_FINE, y);
+    print_status();
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      solve
+ *
+ *  DESCRIPTION
+ *      determines the coarse and fine values needed to achieve the target output frequency
+ * 
+ * RETURNS
+ *      number of iterations to reach a solution
+ *      resulting x and y values are stored in place
+ *---------------------------------------------------------------------*/
+uint8_t solve(float z, uint8_t *x, uint8_t *y)
+{
+    uint8_t x_min, y_min, n = 0;
+    uint8_t x_max, y_max = MCP41HVX1_TAP_COUNT;
+    *x = 128;
+    *y = 128;
+
+    float z_min = 0.99 * z;
+    float z_max = 1.01 * z;
+
+    // get x close
+    while (1)
+    {
+        *x = (x_max + x_min) / 2;
+        float f = freq_128(*x);
+        n++;
+        if ((z_min <= f) && (f <= z_max))
+        {
+            // We have gotten close to the target value
+            break;
+        }
+        else if (z < f)
+        {
+            // The target value is below us. Set upper bound to current value
+            x_max = *x;
+        }
+        else if (z > f)
+        {
+            // The target value is above us. Set lower bound to current value
+            x_min = *x;
+        }
+
+        if ((x_max - x_min) < 2)
+        {
+            // We've reached the end of the search
+            break;
+        }
+    }
+
+    // get y closer
+    z_min = 0.999 * z;
+    z_max = 1.001 * z;
+    while (1)
+    {
+        *y = (y_max + y_min) / 2;
+        float f = freq(*x, *y);
+        n++;
+        if ((z_min <= f) && (f <= z_max))
+        {
+            // We have gotten close to the target value
+            break;
+        }
+        else if (z < f)
+        {
+            // The target value is below us. Set upper bound to current value
+            y_max = *y;
+        }
+        else if (z > f)
+        {
+            // The target value is above us. Set lower bound to current value
+            y_min = *y;
+        }
+
+        if ((y_max - y_min) < 2)
+        {
+            // We've reached the end of the search
+            break;
+        }
+    }
+
+    return n;
+
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      freq
+ *
+ *  DESCRIPTION
+ *      calculates the output frequency for a given coarse and fine value
+ *---------------------------------------------------------------------*/
+float freq(float x, float y)
+{
+    return -1917.6297514 + (16.9812525 * x) + (0.0848209 + 0.0264162 * x + 0.0073799 * y) * y;
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      freq_128
+ *
+ *  DESCRIPTION
+ *      calculates the output frequency for a given coarse value with fine=128
+ *---------------------------------------------------------------------*/
+float freq_128(float x)
+{
+    return 20.3625 * x - 1785.86;
 }

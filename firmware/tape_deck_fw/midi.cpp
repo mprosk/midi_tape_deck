@@ -239,7 +239,9 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
                         }
                         else
                         {
+#ifdef MIDI_FORWARD_NON_NOTE
                             Serial.write(byte);
+#endif
                         }
                     }
                     else
