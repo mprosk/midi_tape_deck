@@ -25,7 +25,7 @@
 #define MIDI_CHANNEL_COUNT  (16)    // Number of MIDI channels
 
 // If defined, non-note, non-SysEx MIDI data will be forwarded to the MIDI out
-#define MIDI_FORWARD_NON_NOTE
+// #define MIDI_FORWARD_NON_NOTE
 
 // If defined, SysEx data will will forwarded to the MIDI out
 // #define MIDI_FORWARD_SYSEX
