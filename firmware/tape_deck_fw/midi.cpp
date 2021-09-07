@@ -19,20 +19,20 @@
 /*=====================================================================*
     Private Defines
  *=====================================================================*/
-#define MIDI_MSN_MASK           (0xF0)      // most significant nibble
-#define MIDI_CHANNEL_MASK       (0x0F)      // least significant nibble
-#define MIDI_7BIT_MASK          (0x7F)      // lower 7 bit mask
-#define MIDI_MSB_MASK           (0x80)      // Most significant bit (status/data flag)
-#define MIDI_NOTE_OFF           (0x80)      // Note off event
-#define MIDI_NOTE_ON            (0x90)      // Note on event
-#define MIDI_KEY_PRESSURE       (0xA0)      // Polyphonic key pressure/aftertouch
-#define MIDI_CONTROL_CHANGE     (0xB0)      // Control change
-#define MIDI_PROGRAM_CHANGE     (0xC0)      // Program change
-#define MIDI_CHANNEL_PRESSURE   (0xD0)      // Channel pressure/aftertouch
-#define MIDI_PITCH_BEND         (0xE0)      // Pitch bend
-#define MIDI_SYSTEM_MESSAGE     (0xF0)      // System Message
+#define MIDI_MSN_MASK           (0xF0)      /* most significant nibble */
+#define MIDI_CHANNEL_MASK       (0x0F)      /* least significant nibble */
+#define MIDI_7BIT_MASK          (0x7F)      /* lower 7 bit mask */
+#define MIDI_MSB_MASK           (0x80)      /* Most significant bit (status/data flag) */
+#define MIDI_NOTE_OFF           (0x80)      /* Note off event */
+#define MIDI_NOTE_ON            (0x90)      /* Note on event */
+#define MIDI_KEY_PRESSURE       (0xA0)      /* Polyphonic key pressure/aftertouch */
+#define MIDI_CONTROL_CHANGE     (0xB0)      /* Control change */
+#define MIDI_PROGRAM_CHANGE     (0xC0)      /* Program change */
+#define MIDI_CHANNEL_PRESSURE   (0xD0)      /* Channel pressure/aftertouch */
+#define MIDI_PITCH_BEND         (0xE0)      /* Pitch bend */
+#define MIDI_SYSTEM_MESSAGE     (0xF0)      /* System Message */
 #define MIDI_SYSEX              (0xF0)
-#define MIDI_EOX                (0xF7)      // End of SysEx
+#define MIDI_EOX                (0xF7)      /* End of SysEx */
 
 
 /*=====================================================================*
@@ -70,7 +70,7 @@
 void midi_note_on(uint8_t channel, uint8_t note, uint8_t velocity)
 {
     uint8_t buffer[3];
-    channel = channel & MIDI_CHANNEL_MASK;      //
+    channel = channel & MIDI_CHANNEL_MASK;
     buffer[0] = channel | MIDI_NOTE_ON;
     buffer[1] = note & MIDI_7BIT_MASK;
     buffer[2] = velocity & MIDI_7BIT_MASK;
@@ -90,7 +90,7 @@ void midi_note_on(uint8_t channel, uint8_t note, uint8_t velocity)
 void midi_note_off(uint8_t channel, uint8_t note, uint8_t velocity)
 {
     uint8_t buffer[3];
-    channel = channel & MIDI_CHANNEL_MASK;      //
+    channel = channel & MIDI_CHANNEL_MASK;
     buffer[0] = channel | MIDI_NOTE_OFF;
     buffer[1] = note & MIDI_7BIT_MASK;
     buffer[2] = velocity & MIDI_7BIT_MASK;
@@ -186,26 +186,26 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
 
     while (Serial.available())
     {
-        // Process the incoming byte
+        /* Process the incoming byte */
         uint8_t byte = Serial.read();
 
-        // Check if it is a status byte
+        /* Check if it is a status byte */
         if (byte & MIDI_MSB_MASK)
         {
             uint8_t message_type = byte & MIDI_MSN_MASK;
             switch (message_type)
             {
-                // CHANNEL MESSAGES
+                /* CHANNEL MESSAGES */
                 case MIDI_NOTE_OFF:
                     event = EVENT_NOTE_OFF;
                     byte_count = 1;
-                    buf[0] = byte & MIDI_CHANNEL_MASK;      // Channel
+                    buf[0] = byte & MIDI_CHANNEL_MASK;      /* Channel */
                     break;
 
                 case MIDI_NOTE_ON:
                     event = EVENT_NOTE_ON;
                     byte_count = 1;
-                    buf[0] = byte & MIDI_CHANNEL_MASK;      // Channel
+                    buf[0] = byte & MIDI_CHANNEL_MASK;      /* Channel */
                     break;
 
                 case MIDI_KEY_PRESSURE:
@@ -213,7 +213,7 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
                 case MIDI_PROGRAM_CHANGE:
                 case MIDI_CHANNEL_PRESSURE:
                 case MIDI_PITCH_BEND:
-                    // Clear the running status on all other channel messages
+                    /* Clear the running status on all other channel messages */
                     event = EVENT_NONE;
                     byte_count = 0;
 #ifdef MIDI_FORWARD_NON_NOTE
@@ -221,12 +221,12 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
 #endif
                     break;
 
-                // SYSTEM MESSAGES
+                /* SYSTEM MESSAGES */
                 case MIDI_SYSTEM_MESSAGE:
-                    // Clear the running status on SysEx or Common messages
+                    /* Clear the running status on SysEx or Common messages */
                     if (byte <= 0xF7)
                     {
-                        // SYSTEM COMMON MESSAGE
+                        /* SYSTEM COMMON MESSAGE */
                         event = EVENT_NONE;
                         byte_count = 0;
 
@@ -246,7 +246,7 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
                     }
                     else
                     {
-                        // SYSTEM REALTIME MESSAGE
+                        /* SYSTEM REALTIME MESSAGE */
 #ifdef MIDI_FORWARD_NON_NOTE
                          Serial.write(byte);
 #endif
@@ -258,11 +258,11 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
             }
         }
 
-        // It's a data byte
+        /* It's a data byte */
         else
         {
-            // Store the data if we're already in the middle of receiving a message
-            // Byte count will be zero if the running status was cleared
+            /* Store the data if we're already in the middle of receiving a message */
+            /* Byte count will be zero if the running status was cleared */
             if (byte_count)
             {
                 buf[byte_count] = byte;
@@ -285,26 +285,26 @@ midi_note_event_t midi_read(midi_note_t * note_struct)
             }
         }
 
-        // Check if we've received enough data for a full note event
+        /* Check if we've received enough data for a full note event */
         if (byte_count == 3)
         {
-            // Copy internal buffer to the input struct
+            /* Copy internal buffer to the input struct */
             note_struct->channel = buf[0];
             note_struct->note = buf[1];
             note_struct->velocity = buf[2];
 
-            // Check if note on with zero velocity
+            /* Check if note on with zero velocity */
             if ((event == EVENT_NOTE_ON) && (buf[2] == 0))
             {
-                // Remap this to a note off event
+                /* Remap this to a note off event */
                 event = EVENT_NOTE_OFF;
             }
 
-            // Reset the byte count
+            /* Reset the byte count */
             byte_count = 0;
 
-            // Exiting early here could still leave data in the
-            // UART buffer that would have to be processed next loop
+            /* Exiting early here could still leave data in the */
+            /* UART buffer that would have to be processed next loop */
             return event;
         }
     }

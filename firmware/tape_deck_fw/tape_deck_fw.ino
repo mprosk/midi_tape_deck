@@ -40,7 +40,7 @@
 /*=====================================================================*
     Private Defines
  *=====================================================================*/
-
+#define MIDI_INVALID                (0xFF)
 
 /*=====================================================================*
     Private Data Types
@@ -61,10 +61,11 @@
 void setup()
 {
 
-    // Initialize UART
-    Serial.begin(115200);
+    /* Initialize UART */
+    // Serial.begin(31250);     /* This is the CORRECT MIDI baud rate */
+    Serial.begin(32190);        /* This is to compensate for the Virus's overzealous clock rate */
 
-    // Initialize MCP41HVx1
+    /* Initialize MCP41HVx1 */
     pinMode(PIN_POT_COARSE, OUTPUT);
     pinMode(PIN_POT_FINE, OUTPUT);
     digitalWrite(PIN_POT_COARSE, HIGH);
@@ -77,26 +78,39 @@ void setup()
 
 void loop()
 {
-    // 880 Hz - A5
-    uint8_t scale[] = {81, 83, 84, 86, 88, 89, 91, 93};
-    for (uint8_t i = 0; i < 8; i++)
+    uint8_t channel = MIDI_INVALID;
+    uint8_t root_note = MIDI_INVALID; 
+
+    midi_note_t note;
+
+    while(1)
     {
-        Serial.println("--------------------------");
-        Serial.println(scale[i] - 12);
-        repitch(81, scale[i] - 12);
-        delay(1000);
+        /* Turn the LED on when recieving MIDI */
+        if (Serial.available())
+        {
+            digitalWrite(PIN_LED, HIGH);
+        }
+
+        midi_note_event_t note_event = midi_read(&note);
+        if (note_event == EVENT_NOTE_ON)
+        {
+            /* Learn the MIDI channel and root note if we haven't set one yet */
+            if (channel == MIDI_INVALID)
+            {
+                channel = note.channel;
+                root_note = note.note;
+            }
+
+            /* If the note on event was on our channel, apply the repitch */
+            if (note.channel == channel)
+            {
+                repitch(root_note, note.note);
+            }
+        }
+
+        /* Turn off the LED */
+        digitalWrite(PIN_LED, LOW);
     }
-
-    // midi_note_t note;
-    // while(1)
-    // {
-    //     midi_note_event_t note_event = midi_read(&note);
-    //     if (note_event == EVENT_NOTE_ON)
-    //     {
-
-    //     }
-    // }
-
 }
 
 
@@ -134,8 +148,8 @@ uint8_t repitch(uint8_t nominal, uint8_t target)
     Serial.print("Target: "); Serial.println(t);
     float freq = t - get_note_freq(nominal);
     Serial.print("Delta F: "); Serial.println(freq);
-    uint8_t x = 128;
-    uint8_t y = 128;
+    uint8_t x = 127;
+    uint8_t y = 127;
     uint8_t n = solve(freq, &x, &y);
     Serial.print("Solution found in "); Serial.println(n);
     Serial.print("X = "); Serial.print(x); Serial.print(", Y = "); Serial.println(y);
@@ -169,7 +183,7 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
     float z_min = 0.99 * z;
     float z_max = 1.01 * z;
 
-    // get x close
+    /* get x close */
     while (1)
     {
         *x = (x_max + x_min) / 2;
@@ -178,28 +192,28 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
         n++;
         if ((z_min <= f) && (f <= z_max))
         {
-            // We have gotten close to the target value
+            /* We have gotten close to the target value */
             break;
         }
         else if (z < f)
         {
-            // The target value is below us. Set upper bound to current value
+            /* The target value is below us. Set upper bound to current value */
             x_max = *x;
         }
         else if (z > f)
         {
-            // The target value is above us. Set lower bound to current value
+            /* The target value is above us. Set lower bound to current value */
             x_min = *x;
         }
 
         if ((x_max - x_min) < 2)
         {
-            // We've reached the end of the search
+            /* We've reached the end of the search */
             break;
         }
     }
 
-    // get y closer
+    /* get y closer */
     z_min = 0.999 * z;
     z_max = 1.001 * z;
     while (1)
@@ -210,23 +224,23 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
         n++;
         if ((z_min <= f) && (f <= z_max))
         {
-            // We have gotten close to the target value
+            /* We have gotten close to the target value */
             break;
         }
         else if (z < f)
         {
-            // The target value is below us. Set upper bound to current value
+            /* The target value is below us. Set upper bound to current value */
             y_max = *y;
         }
         else if (z > f)
         {
-            // The target value is above us. Set lower bound to current value
+            /* The target value is above us. Set lower bound to current value */
             y_min = *y;
         }
 
         if ((y_max - y_min) < 2)
         {
-            // We've reached the end of the search
+            /* We've reached the end of the search */
             break;
         }
     }
