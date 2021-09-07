@@ -49,14 +49,6 @@
 
 
 /*=====================================================================*
-    Private Function Prototypes
- *=====================================================================*/
-void repitch(uint8_t nominal, uint8_t target);
-uint8_t solve(float z, uint8_t *x, uint8_t *y);
-float freq(float x, float y);
-float freq_128(float x, float y);
-
-/*=====================================================================*
     Private Data
  *=====================================================================*/
 
@@ -86,10 +78,12 @@ void setup()
 void loop()
 {
     // 880 Hz - A5
-    uint8_t notes[] = {81, 83, 84, 86, 88, 89, 91, 93};
+    uint8_t scale[] = {81, 83, 84, 86, 88, 89, 91, 93};
     for (uint8_t i = 0; i < 8; i++)
     {
-        repitch(81, notes[i]);
+        Serial.println("--------------------------");
+        Serial.println(scale[i]);
+        repitch(81, scale[i]);
         delay(1000);
     }
 
@@ -134,14 +128,21 @@ void print_status(void)
  *      sets the potentiometers to produce a target output
  *      note given the nominal note of the sample
  *---------------------------------------------------------------------*/
-void repitch(uint8_t nominal, uint8_t target)
+uint8_t repitch(uint8_t nominal, uint8_t target)
 {
-    float freq = get_note_freq(target) - get_note_freq(nominal);
-    uint8_t x, y = 128;
+    float t = get_note_freq(target);
+    Serial.print("Target: "); Serial.println(t);
+    float freq = t - get_note_freq(nominal);
+    Serial.print("Delta F: "); Serial.println(freq);
+    uint8_t x = 128;
+    uint8_t y = 128;
     uint8_t n = solve(freq, &x, &y);
+    Serial.print("Solution found in "); Serial.println(n);
+    Serial.print("X = "); Serial.print(x); Serial.print(", Y = "); Serial.println(y);
     mcp41hvx1_set(PIN_POT_COARSE, x);
     mcp41hvx1_set(PIN_POT_FINE, y);
     print_status();
+    return n;
 }
 
 /*---------------------------------------------------------------------*
@@ -157,8 +158,11 @@ void repitch(uint8_t nominal, uint8_t target)
  *---------------------------------------------------------------------*/
 uint8_t solve(float z, uint8_t *x, uint8_t *y)
 {
-    uint8_t x_min, y_min, n = 0;
-    uint8_t x_max, y_max = MCP41HVX1_TAP_COUNT;
+    uint8_t n = 0;
+    uint8_t x_min = 0;
+    uint8_t y_min = 0;
+    uint8_t x_max = MCP41HVX1_TAP_COUNT - 1;
+    uint8_t y_max = MCP41HVX1_TAP_COUNT - 1;
     *x = 128;
     *y = 128;
 
@@ -170,6 +174,7 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
     {
         *x = (x_max + x_min) / 2;
         float f = freq_128(*x);
+        Serial.print("Step "); Serial.print(n); Serial.print(", x = "); Serial.print(*x); Serial.print(" ("); Serial.print(x_min); Serial.print(", "); Serial.print(x_max); Serial.print("), f = "); Serial.println(f);
         n++;
         if ((z_min <= f) && (f <= z_max))
         {
@@ -201,6 +206,7 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
     {
         *y = (y_max + y_min) / 2;
         float f = freq(*x, *y);
+        Serial.print("Step "); Serial.print(n); Serial.print(", y = "); Serial.print(*y); Serial.print(" ("); Serial.print(y_min); Serial.print(", "); Serial.print(y_max); Serial.print("), f = "); Serial.println(f);
         n++;
         if ((z_min <= f) && (f <= z_max))
         {
@@ -236,9 +242,9 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
  *  DESCRIPTION
  *      calculates the output frequency for a given coarse and fine value
  *---------------------------------------------------------------------*/
-float freq(float x, float y)
+float freq(uint8_t x, uint8_t y)
 {
-    return -1917.6297514 + (16.9812525 * x) + (0.0848209 + 0.0264162 * x + 0.0073799 * y) * y;
+    return -1917.6297514 + (16.9812525 * (float)x) + (0.0848209 + 0.0264162 * (float)x + 0.0073799 * (float)y) * (float)y;
 }
 
 /*---------------------------------------------------------------------*
@@ -248,7 +254,7 @@ float freq(float x, float y)
  *  DESCRIPTION
  *      calculates the output frequency for a given coarse value with fine=128
  *---------------------------------------------------------------------*/
-float freq_128(float x)
+float freq_128(uint8_t x)
 {
-    return 20.3625 * x - 1785.86;
+    return 20.3625 * (float)x - 1785.86;
 }
