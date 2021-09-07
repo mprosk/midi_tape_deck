@@ -6,8 +6,8 @@ def freq_full(x, y):
 def freq(x, y):
     return -1917.6297514 + (16.9812525 * x) + (0.0848209 + 0.0264162 * x + 0.0073799 * y) * y
 
-def freq_128(x):
-    return 20.3625 * x - 1785.86
+def freq_127(x):
+    return 20.3361 * x - 1787.83
 
 
 def dump():
@@ -36,46 +36,37 @@ def is_close(val, target, tol=0.2):
 
 def solve(z):
     x_min = 0
-    x_max = 256
+    x_max = 255
     y_min = 0
-    y_max = 256
+    y_max = 255
 
     y = (y_max + y_min) // 2
 
     n = 0
 
     # get x close
-    while True:
+    for _ in range(8):
         x = (x_max + x_min) // 2
-        f = freq_128(x)
+        f = freq_127(x)
         print('Step {}, x = {} ({}, {}), f = {}'.format(n, x, x_min, x_max, f))
         n += 1
-        if is_close(f, z, .01):
-            break
-        elif z < f:
+        if z < f:
             x_max = x
         elif z > f:
             x_min = x
-
-        if x_max - x_min < 2:
-            break
     print('X =', x)
 
     # get y closer
-    while True:
+    for _ in range(8):
         y = (y_max + y_min) // 2
         f = freq(x, y)
         print('Step {}, y = {} ({}, {}), f = {}'.format(n, y, y_min, y_max, f))
         n += 1
-        if is_close(f, z, .001):
-            break
-        elif z < f:
+        if z < f:
             y_max = y
         elif z > f:
             y_min = y
 
-        if y_max - y_min < 2:
-            break
     print('Y =', y)
 
     return x, y
@@ -88,5 +79,9 @@ if __name__ == '__main__':
         print("Solving for Z =", z)
         x, y = solve(z)
         f = freq(x, y)
-        err = (f / z)
+        err = 'N/A'
+        try:
+            err = abs((f - z) / z)
+        except:
+            pass
         print('X = {}, Y = {}, Z = {}, f = {}, error = {}'.format(x, y, z, f, err))

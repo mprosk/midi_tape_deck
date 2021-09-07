@@ -82,8 +82,8 @@ void loop()
     for (uint8_t i = 0; i < 8; i++)
     {
         Serial.println("--------------------------");
-        Serial.println(scale[i]);
-        repitch(81, scale[i]);
+        Serial.println(scale[i] - 12);
+        repitch(81, scale[i] - 12);
         delay(1000);
     }
 
@@ -163,8 +163,8 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
     uint8_t y_min = 0;
     uint8_t x_max = MCP41HVX1_TAP_COUNT - 1;
     uint8_t y_max = MCP41HVX1_TAP_COUNT - 1;
-    *x = 128;
-    *y = 128;
+    *x = 127;
+    *y = 127;
 
     float z_min = 0.99 * z;
     float z_max = 1.01 * z;
@@ -173,7 +173,7 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
     while (1)
     {
         *x = (x_max + x_min) / 2;
-        float f = freq_128(*x);
+        float f = freq_127(*x);
         Serial.print("Step "); Serial.print(n); Serial.print(", x = "); Serial.print(*x); Serial.print(" ("); Serial.print(x_min); Serial.print(", "); Serial.print(x_max); Serial.print("), f = "); Serial.println(f);
         n++;
         if ((z_min <= f) && (f <= z_max))
@@ -254,7 +254,7 @@ float freq(uint8_t x, uint8_t y)
  *  DESCRIPTION
  *      calculates the output frequency for a given coarse value with fine=128
  *---------------------------------------------------------------------*/
-float freq_128(uint8_t x)
+float freq_127(uint8_t x)
 {
-    return 20.3625 * (float)x - 1785.86;
+    return 20.3361 * (float)x - 1787.83;
 }
