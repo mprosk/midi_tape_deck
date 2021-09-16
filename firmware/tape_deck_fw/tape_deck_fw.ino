@@ -40,7 +40,8 @@
 /*=====================================================================*
     Private Defines
  *=====================================================================*/
-
+#define USE_POT_5K_5K               /* Define when using two 5k pots */
+// #define USE_POT_10K_10K          /* Define when using two 10k pots */
 
 /*=====================================================================*
     Private Data Types
@@ -77,15 +78,11 @@ void setup()
 
 void loop()
 {
-    // 880 Hz - A5
-    uint8_t scale[] = {81, 83, 84, 86, 88, 89, 91, 93};
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        Serial.println("--------------------------");
-        Serial.println(scale[i] - 12);
-        repitch(81, scale[i] - 12);
-        delay(1000);
-    }
+
+    // test_manual();
+    test_scale();
+
+    
 
     // midi_note_t note;
     // while(1)
@@ -244,7 +241,14 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
  *---------------------------------------------------------------------*/
 float freq(uint8_t x, uint8_t y)
 {
+#ifdef USE_POT_5K_5K
+    /* Equation for 5k-5k pot */
+    return -1442.6813481 + (11.9464853 * (float)x) + (0.9731225 + 0.0116663 * (float)x + 0.0028641 * (float)y) * (float)y;
+#endif
+#ifdef USE_POT_10K_10K
+    /* Equation for 10k-10k pot */
     return -1917.6297514 + (16.9812525 * (float)x) + (0.0848209 + 0.0264162 * (float)x + 0.0073799 * (float)y) * (float)y;
+#endif
 }
 
 /*---------------------------------------------------------------------*
@@ -256,5 +260,94 @@ float freq(uint8_t x, uint8_t y)
  *---------------------------------------------------------------------*/
 float freq_127(uint8_t x)
 {
+#ifdef USE_POT_5K_5K
+    /* Equation for 5k-5k pot */
+    return 13.4281111 * (float)x - 1272.9;
+#endif
+#ifdef USE_POT_10K_10K
+    /* Equation for 10k-10k pot */
     return 20.3361 * (float)x - 1787.83;
+#endif
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      test_manual
+ *
+ *  DESCRIPTION
+ *      loop for setting manual potentiometer values
+ *---------------------------------------------------------------------*/
+void test_manual(void)
+{
+    long int val = 0;
+    Serial.println("Type 'c' to change coarse value or 'f' to change fine value");
+    Serial.setTimeout(15000);
+    while (1)
+    {
+        if (Serial.available())
+        {
+            switch (Serial.read())
+            {
+            case 'c':
+                Serial.print("Enter value for coarse pot: ");
+                val = Serial.parseInt();
+                Serial.println(val);
+                if ((val >= 0) && (val < MCP41HVX1_TAP_COUNT))
+                {
+                    mcp41hvx1_set(PIN_POT_COARSE, (uint8_t)val);
+                    print_status();
+                }
+                else
+                {
+                    Serial.println("Invalid entry");
+                    Serial.println("Type 'c' to change coarse value or 'f' to change fine value");
+                }
+                break;
+            case 'f':
+                Serial.print("Enter value for fine pot: ");
+                val = Serial.parseInt();
+                Serial.println(val);
+                if ((val >= 0) && (val < MCP41HVX1_TAP_COUNT))
+                {
+                    mcp41hvx1_set(PIN_POT_FINE, (uint8_t)val);
+                    print_status();
+                }
+                else
+                {
+                    Serial.println("Invalid entry");
+                    Serial.println("Type 'c' to change coarse value or 'f' to change fine value");
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      test_scale
+ *
+ *  DESCRIPTION
+ *      loop for an A major scale
+ *---------------------------------------------------------------------*/
+void test_scale(void)
+{
+    // 880 Hz - A5
+    const uint8_t scale[] = {81, 83, 84, 86, 88, 89, 91, 93};
+    while(1)
+    {
+        if (Serial.available())
+        {
+            char c = Serial.read();
+            if ((c >= '1') && (c <='8'))
+            {
+                uint8_t x = c - '1';
+                Serial.println("--------------------------");
+                Serial.println(scale[x] - 12);
+                repitch(81, scale[x] - 12);
+            }
+        }
+    }
 }
