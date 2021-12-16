@@ -17,6 +17,10 @@ def read_csv(filename='freq.csv'):
     return c, f, q
 
 
+def print_eqn(C):
+    print('{} + ({} * x) + ({} + {} * x + {} * y) * y'.format(C[0], C[1], C[2], C[3], C[5]))
+
+
 if __name__ == '__main__':
     x, y, z = read_csv('5k-5k.csv')
     data = np.c_[x, y, z]
@@ -32,8 +36,15 @@ if __name__ == '__main__':
 
     C[4] = 0
 
-    # generate the equation
-    print('Z = {} + ({})*X + ({})*Y + ({})*X*Y + ({})*X**2 + ({})*Y**2'.format(C[0], C[1], C[2], C[3], C[4], C[5]))
+    # generate the output
+    print_eqn(C)
+
+    # print coeffs rounded to 7 places (max float resolution)
+    R = []
+    for i, x in enumerate(C):
+        R.append(round(x, 7))
+    print()
+    print_eqn(R)
 
     # evaluate it on a grid
     Z = np.dot(np.c_[np.ones(XX.shape), XX, YY, XX * YY, XX ** 2, YY ** 2], C).reshape(X.shape)
@@ -42,9 +53,9 @@ if __name__ == '__main__':
     ax = fig.gca(projection='3d')
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2)
     ax.scatter(data[:, 0], data[:, 1], data[:, 2], c='r', s=50)
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    ax.set_zlabel('Z')
+    plt.xlabel('Coarse')
+    plt.ylabel('Fine')
+    ax.set_zlabel('Freq Shift')
     # ax.axis('equal')
     ax.axis('tight')
     plt.show()
