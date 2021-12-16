@@ -30,11 +30,11 @@
 /*=====================================================================*
     Pin Defines
  *=====================================================================*/
-#define PIN_INT_0                   (2)
+#define PIN_MODE_SW                 (2)
 #define PIN_INT_1                   (3)
 #define PIN_POT_COARSE              (A4)
 #define PIN_POT_FINE                (A5)
-#define PIN_LED                     (9)
+#define PIN_LED                     (A0)
 
 
 /*=====================================================================*
@@ -62,8 +62,16 @@
 void setup()
 {
 
-    // Initialize UART
-    Serial.begin(115200);
+    // Initialize UART for MIDI
+     Serial.begin(31250);      // This is the CORRECT MIDI baud rate
+//    Serial.begin(32190);        // This is to compensate for the Virus's overzealous clock rate
+
+
+    // Initialize GPIO
+    pinMode(PIN_MODE_SW, INPUT_PULLUP);
+    pinMode(PIN_LED, OUTPUT);
+    digitalWrite(PIN_LED, LOW);
+    
 
     // Initialize MCP41HVx1
     pinMode(PIN_POT_COARSE, OUTPUT);
@@ -78,22 +86,21 @@ void setup()
 
 void loop()
 {
-
-    //test_manual();
-    test_scale();
-
+//    test_manual();
+//    test_scale();
     
-
-    // midi_note_t note;
-    // while(1)
-    // {
-    //     midi_note_event_t note_event = midi_read(&note);
-    //     if (note_event == EVENT_NOTE_ON)
-    //     {
-
-    //     }
-    // }
-
+    uint8_t nominal = 69;
+    midi_note_t note;
+    while(1)
+    {
+        midi_note_event_t note_event = midi_read(&note);
+        if (note_event == EVENT_NOTE_ON)
+        {
+            digitalWrite(PIN_LED, HIGH);
+            repitch(69, note.note);
+            digitalWrite(PIN_LED, LOW);
+        }
+    }
 }
 
 
@@ -268,86 +275,4 @@ float freq_127(uint8_t x)
     /* Equation for 10k-10k pot */
     return 20.3361 * (float)x - 1787.83;
 #endif
-}
-
-/*---------------------------------------------------------------------*
- *  NAME
- *      test_manual
- *
- *  DESCRIPTION
- *      loop for setting manual potentiometer values
- *---------------------------------------------------------------------*/
-void test_manual(void)
-{
-    long int val = 0;
-    Serial.println("Type 'c' to change coarse value or 'f' to change fine value");
-    Serial.setTimeout(15000);
-    while (1)
-    {
-        if (Serial.available())
-        {
-            switch (Serial.read())
-            {
-            case 'c':
-                Serial.print("Enter value for coarse pot: ");
-                val = Serial.parseInt();
-                Serial.println(val);
-                if ((val >= 0) && (val < MCP41HVX1_TAP_COUNT))
-                {
-                    mcp41hvx1_set(PIN_POT_COARSE, (uint8_t)val);
-                    print_status();
-                }
-                else
-                {
-                    Serial.println("Invalid entry");
-                    Serial.println("Type 'c' to change coarse value or 'f' to change fine value");
-                }
-                break;
-            case 'f':
-                Serial.print("Enter value for fine pot: ");
-                val = Serial.parseInt();
-                Serial.println(val);
-                if ((val >= 0) && (val < MCP41HVX1_TAP_COUNT))
-                {
-                    mcp41hvx1_set(PIN_POT_FINE, (uint8_t)val);
-                    print_status();
-                }
-                else
-                {
-                    Serial.println("Invalid entry");
-                    Serial.println("Type 'c' to change coarse value or 'f' to change fine value");
-                }
-                break;
-            default:
-                break;
-            }
-        }
-    }
-}
-
-/*---------------------------------------------------------------------*
- *  NAME
- *      test_scale
- *
- *  DESCRIPTION
- *      loop for an A major scale
- *---------------------------------------------------------------------*/
-void test_scale(void)
-{
-    // 880 Hz - A5
-    const uint8_t scale[] = {81, 83, 84, 86, 88, 89, 91, 93};
-    while(1)
-    {
-        if (Serial.available())
-        {
-            char c = Serial.read();
-            if ((c >= '1') && (c <='8'))
-            {
-                uint8_t x = c - '1';
-                Serial.println("--------------------------");
-                Serial.println(scale[x] - 12);
-                repitch(81, scale[x] - 12);
-            }
-        }
-    }
 }
