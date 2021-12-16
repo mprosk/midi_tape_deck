@@ -33,7 +33,7 @@ This system has two independent variables--the settings of the coarse and fine p
 
 Note that this relationship is only linear when the coarse potentiometer is changed, and is nonlinear when the fine potentiometer is changed. Also note how the coarse potentiometer has a greater impact on the output frequency than the fine potentiometer. 
 
-Once we have captured enough data points, a best fit equation can be calculated for the surface. This is performed in `eval/eval.py`. This produces a formula that equates the change in output frequency based on the coarse (x) and fine (y) potentiometer settings.
+Once we have captured enough data points, a best fit equation can be calculated for the surface using polynomial regression. This is performed in `eval/eval.py`. This produces a formula that equates the change in output frequency based on the coarse (x) and fine (y) potentiometer settings.
 
 ```
 freq(x,y) = -1503.0871471 + 12.0767089x + 0.9015391y + 0.0115233xy + 0.003259y^2
