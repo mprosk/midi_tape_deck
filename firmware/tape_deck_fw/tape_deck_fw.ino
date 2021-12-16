@@ -79,7 +79,7 @@ void setup()
 void loop()
 {
 
-    // test_manual();
+    //test_manual();
     test_scale();
 
     
@@ -243,7 +243,7 @@ float freq(uint8_t x, uint8_t y)
 {
 #ifdef USE_POT_5K_5K
     /* Equation for 5k-5k pot */
-    return -1442.6813481 + (11.9464853 * (float)x) + (0.9731225 + 0.0116663 * (float)x + 0.0028641 * (float)y) * (float)y;
+    return -1503.0871471 + (12.0767089 * (float)x) + (0.9015391 + 0.0115233 * (float)x + 0.0032597 * (float)y) * (float)y;
 #endif
 #ifdef USE_POT_10K_10K
     /* Equation for 10k-10k pot */
@@ -262,7 +262,7 @@ float freq_127(uint8_t x)
 {
 #ifdef USE_POT_5K_5K
     /* Equation for 5k-5k pot */
-    return 13.4281111 * (float)x - 1272.9;
+    return 13.5402 * (float)x - 1336.02;
 #endif
 #ifdef USE_POT_10K_10K
     /* Equation for 10k-10k pot */
