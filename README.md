@@ -34,16 +34,16 @@ This system has two independent variables--the settings of the coarse and fine p
 Note that this relationship is only linear when the coarse potentiometer is changed, and is nonlinear when the fine potentiometer is changed. Also note how the coarse potentiometer has a greater impact on the output frequency than the fine potentiometer. 
 
 Once we have captured enough data points, a best fit equation can be calculated for the surface. This is performed in `eval/eval.py`. This produces a formula that equates the change in output frequency based on the coarse (x) and fine (y) potentiometer settings.
-$$
-freq(x,y)=-1503.0871471 + 12.0767089x + 0.9015391y + 0.0115233xy + 0.003259 y^2
-$$
+
+```
+freq(x,y) = -1503.0871471 + 12.0767089x + 0.9015391y + 0.0115233xy + 0.003259y^2
+```
 
 ### Equation Solver
 
 Now that we are able to calculated the change in output frequency for a given combination of coarse and fine settings, we can start to work on the inverse: finding the combination of potentiometer settings that result in the desired change in output frequency.
 
-Solving the equation mathematically for a given frequency is not conducive to an embedded device (or me) so this approach will be a little more brute-force
+Solving the equation mathematically for a given frequency is not conducive to an embedded device (or me) so this approach will be a little more brute-force, essentially a recursive guess-and-check.
 
-> It is important to remember that while the equation above is continuous, the actual system is not, since the digital potentiometers can only be set to integer values in the range [0, 255]. The actual system is a mesh of 65,526 discrete points.
+First, the setting of the fine potentiometer is fixed to 127. A binary search is performed on the setting of the coarse potentiometer, using the equation above to determine what the output frequency will be. Once a coarse settings is found that puts the output close enough to the target value, the same operation is repeated for the fine potentiometer. Essentially the coarse pot is adjust to get the output close, then final adjustment is made using the fine pot.
 
-To this end, 
