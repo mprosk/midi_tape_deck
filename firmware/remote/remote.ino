@@ -73,6 +73,26 @@ void loop()
             case 's':
                 print_status();
                 break;
+
+            case 'z':
+                mcp41hvx1_decrement(PIN_POT_COARSE);
+                print_status();
+                break;
+
+            case 'x':
+                mcp41hvx1_increment(PIN_POT_COARSE);
+                print_status();
+                break;
+
+            case ',':
+                mcp41hvx1_decrement(PIN_POT_FINE);
+                print_status();
+                break;
+
+            case '.':
+                mcp41hvx1_increment(PIN_POT_FINE);
+                print_status();
+                break;
                 
             default:
                 break;
