@@ -40,8 +40,7 @@
 /*=====================================================================*
     Private Defines
  *=====================================================================*/
-#define USE_POT_5K_5K               /* Define when using two 5k pots */
-// #define USE_POT_10K_10K          /* Define when using two 10k pots */
+#define DEBUG_PRINTOUT              /* Enables debug printing */
 
 /*=====================================================================*
     Private Data Types
@@ -63,8 +62,8 @@ void setup()
 {
 
     // Initialize UART for MIDI
-     Serial.begin(31250);      // This is the CORRECT MIDI baud rate
-//    Serial.begin(32190);        // This is to compensate for the Virus's overzealous clock rate
+    //  Serial.begin(31250);      // This is the CORRECT MIDI baud rate
+   Serial.begin(32190);        // This is to compensate for the Virus's overzealous clock rate
 
 
     // Initialize GPIO
@@ -85,10 +84,7 @@ void setup()
 /*---------------------------------------------------------------------*/
 
 void loop()
-{
-//    test_manual();
-//    test_scale();
-    
+{   
     uint8_t nominal = 69;
     midi_note_t note;
     while(1)
@@ -117,11 +113,13 @@ void loop()
  *---------------------------------------------------------------------*/
 void print_status(void)
 {
+#ifdef DEBUG_PRINTOUT
     Serial.print("Coarse: ");
     Serial.print(mcp41hvx1_get(PIN_POT_COARSE));
     Serial.print(" Fine: ");
     Serial.print(mcp41hvx1_get(PIN_POT_FINE));
     Serial.println();
+#endif
 }
 
 /*---------------------------------------------------------------------*
@@ -136,8 +134,8 @@ uint8_t repitch(uint8_t nominal, uint8_t target)
 {
     float t = get_note_freq(target);
     Serial.print("Target: "); Serial.println(t);
-    float freq = t - get_note_freq(nominal);
-    Serial.print("Delta F: "); Serial.println(freq);
+    float freq = t / get_note_freq(nominal);
+    Serial.print("% change: "); Serial.println(freq);
     uint8_t x = 128;
     uint8_t y = 128;
     uint8_t n = solve(freq, &x, &y);
@@ -162,62 +160,21 @@ uint8_t repitch(uint8_t nominal, uint8_t target)
  *---------------------------------------------------------------------*/
 uint8_t solve(float z, uint8_t *x, uint8_t *y)
 {
-    uint8_t n = 0;
-    uint8_t x_min = 0;
     uint8_t y_min = 0;
-    uint8_t x_max = MCP41HVX1_TAP_COUNT - 1;
     uint8_t y_max = MCP41HVX1_TAP_COUNT - 1;
-    *x = 127;
-    *y = 127;
+    
+    // Solve for the X value that puts us just above the target
+    *x = coarse(z);
 
-    float z_min = 0.99 * z;
-    float z_max = 1.01 * z;
-
-    // get x close
-    while (1)
-    {
-        *x = (x_max + x_min) / 2;
-        float f = freq_127(*x);
-        Serial.print("Step "); Serial.print(n); Serial.print(", x = "); Serial.print(*x); Serial.print(" ("); Serial.print(x_min); Serial.print(", "); Serial.print(x_max); Serial.print("), f = "); Serial.println(f);
-        n++;
-        if ((z_min <= f) && (f <= z_max))
-        {
-            // We have gotten close to the target value
-            break;
-        }
-        else if (z < f)
-        {
-            // The target value is below us. Set upper bound to current value
-            x_max = *x;
-        }
-        else if (z > f)
-        {
-            // The target value is above us. Set lower bound to current value
-            x_min = *x;
-        }
-
-        if ((x_max - x_min) < 2)
-        {
-            // We've reached the end of the search
-            break;
-        }
-    }
-
-    // get y closer
-    z_min = 0.999 * z;
-    z_max = 1.001 * z;
-    while (1)
+    // Search for the Y value that gets us to the target
+    for(uint8_t i = 0; i < 8; i++)
     {
         *y = (y_max + y_min) / 2;
         float f = freq(*x, *y);
-        Serial.print("Step "); Serial.print(n); Serial.print(", y = "); Serial.print(*y); Serial.print(" ("); Serial.print(y_min); Serial.print(", "); Serial.print(y_max); Serial.print("), f = "); Serial.println(f);
-        n++;
-        if ((z_min <= f) && (f <= z_max))
-        {
-            // We have gotten close to the target value
-            break;
-        }
-        else if (z < f)
+#ifdef DEBUG_PRINTOUT
+        Serial.print("Step "); Serial.print(i); Serial.print(", y = "); Serial.print(*y); Serial.print(" ("); Serial.print(y_min); Serial.print(", "); Serial.print(y_max); Serial.print("), f = "); Serial.println(f);
+#endif
+        if (z < f)
         {
             // The target value is below us. Set upper bound to current value
             y_max = *y;
@@ -227,16 +184,13 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
             // The target value is above us. Set lower bound to current value
             y_min = *y;
         }
-
-        if ((y_max - y_min) < 2)
+        else
         {
-            // We've reached the end of the search
-            break;
+            // We have exactly found the target (unlikely)
+            return i;
         }
     }
-
-    return n;
-
+    return 8;
 }
 
 /*---------------------------------------------------------------------*
@@ -248,31 +202,29 @@ uint8_t solve(float z, uint8_t *x, uint8_t *y)
  *---------------------------------------------------------------------*/
 float freq(uint8_t x, uint8_t y)
 {
-#ifdef USE_POT_5K_5K
-    /* Equation for 5k-5k pot */
-    return -1503.0871471 + (12.0767089 * (float)x) + (0.9015391 + 0.0115233 * (float)x + 0.0032597 * (float)y) * (float)y;
-#endif
-#ifdef USE_POT_10K_10K
-    /* Equation for 10k-10k pot */
-    return -1917.6297514 + (16.9812525 * (float)x) + (0.0848209 + 0.0264162 * (float)x + 0.0073799 * (float)y) * (float)y;
-#endif
+    /* Equation for 5k-(5k||1.5k) pot */
+    return 0.6351428 + (0.0048308 * (float)x) + (-0.0001811 + 9e-07 * (float)x + 1.2e-06 * (float)y) * (float)y;
 }
 
 /*---------------------------------------------------------------------*
  *  NAME
- *      freq_128
+ *      coarse
  *
  *  DESCRIPTION
- *      calculates the output frequency for a given coarse value with fine=128
+ *      calculates the coarse pot setting that is just above the given frequency
+ *      Fine = 255
  *---------------------------------------------------------------------*/
-float freq_127(uint8_t x)
+uint8_t coarse(float z)
 {
-#ifdef USE_POT_5K_5K
-    /* Equation for 5k-5k pot */
-    return 13.5402 * (float)x - 1336.02;
-#endif
-#ifdef USE_POT_10K_10K
-    /* Equation for 10k-10k pot */
-    return 20.3361 * (float)x - 1787.83;
-#endif
+    /* Equation for 5k-(5k||1.5k) pot */
+    float c = ceil(197.617 * z - 131.809);
+    if (c < 0)
+    {
+        return 0;
+    }
+    if (c > MCP41HVX1_TAP_COUNT - 1)
+    {
+        return MCP41HVX1_TAP_COUNT - 1;
+    }
+    return (uint8_t)c;
 }
