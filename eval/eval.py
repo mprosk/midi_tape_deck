@@ -2,9 +2,10 @@ import numpy as np
 import scipy.linalg
 # from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+import sys
 
 
-def read_csv(filename='freq.csv'):
+def read_csv(filename):
     c = []
     f = []
     q = []
@@ -22,7 +23,7 @@ def print_eqn(C):
 
 
 if __name__ == '__main__':
-    x, y, z = read_csv('5k-5k.csv')
+    x, y, z = read_csv(sys.argv[1])
     data = np.c_[x, y, z]
     mn = np.min(data, axis=0)
     mx = np.max(data, axis=0)
