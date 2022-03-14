@@ -25,6 +25,7 @@
 /*=====================================================================*
     System-wide Header Files
  *=====================================================================*/
+#include <Arduino.h>
 #include <math.h>
 
 
@@ -41,7 +42,8 @@
 /*=====================================================================*
     Private Defines
  *=====================================================================*/
-#define DEBUG_PRINTOUT              /* Enables debug printing */
+// #define DEBUG_PRINTOUT              /* Enables debug printing */
+#define LED_BLINK_INTERVAL_MS       (1000u)
 
 /*=====================================================================*
     Private Data Types
@@ -63,9 +65,8 @@ void setup()
 {
 
     // Initialize UART for MIDI
-    //  Serial.begin(31250);      // This is the CORRECT MIDI baud rate
-   Serial.begin(32190);        // This is to compensate for the Virus's overzealous clock rate
-
+      Serial.begin(31250);      // This is the CORRECT MIDI baud rate
+//    Serial.begin(32190);        // This is to compensate for the Virus's overzealous clock rate
 
     // Initialize GPIO
     pinMode(PIN_MODE_SW, INPUT_PULLUP);
@@ -86,15 +87,41 @@ void setup()
 
 void loop()
 {   
-    uint8_t nominal = 69;
+    uint8_t nominal = 0xFF;
     midi_note_t note;
+    uint8_t mode_last = digitalRead(PIN_MODE_SW);
+    digitalWrite(PIN_LED, mode_last);
+
     while(1)
     {
+        // Check if we've changed control modes
+        uint8_t mode = digitalRead(PIN_MODE_SW);
+        if (mode != mode_last)
+        {
+            nominal = 0xFF;
+            repitch(60, 60);
+            digitalWrite(PIN_LED, mode);
+        }
+        mode_last = mode;
+
+        // Process incoming MIDI notes
         midi_note_event_t note_event = midi_read(&note);
-        if (note_event == EVENT_NOTE_ON)
+        if ((note_event == EVENT_NOTE_ON) && mode)
         {
             digitalWrite(PIN_LED, HIGH);
-            repitch(69, note.note);
+
+            // If the nominal pitch has not been set, record it now
+            if (nominal == 0xFF) {
+                nominal = note.note;
+            }
+            
+            // Apply the repitching
+            repitch(nominal, note.note);
+
+#ifndef DEBUG_PRINTOUT
+            // Delay breifly so the LED is more visible
+            delayMicroseconds(1500);
+#endif
             digitalWrite(PIN_LED, LOW);
         }
     }
@@ -133,113 +160,27 @@ void print_status(void)
  *---------------------------------------------------------------------*/
 uint8_t repitch(uint8_t nominal, uint8_t target)
 {
-    float t = get_note_freq(target);
-    Serial.print("Target: "); Serial.print(target);
-    Serial.print(" ("); Serial.print(t); Serial.println("Hz)");
-    float freq = t / get_note_freq(nominal);
-    Serial.print("% change: "); Serial.println(freq);
-    uint8_t x = single(freq);
+    float target_freq = get_note_freq(target);
+    float target_percent = target_freq / get_note_freq(nominal);
+    uint8_t x = single(target_percent);
     mcp41hvx1_set(PIN_POT_COARSE, x);
 
-    // uint8_t x = 128;
-    // uint8_t y = 128;
-    // uint8_t n = solve(freq, &x, &y);
-    // Serial.print("Solution found in "); Serial.println(n);
-    // Serial.print("X = "); Serial.print(x); Serial.print(", Y = "); Serial.println(y);
-    // mcp41hvx1_set(PIN_POT_COARSE, x);
-    // mcp41hvx1_set(PIN_POT_FINE, y);
-    print_status();
-    return 1;
-}
-
-/*---------------------------------------------------------------------*
- *  NAME
- *      solve
- *
- *  DESCRIPTION
- *      determines the coarse and fine values needed to achieve the target output frequency
- * 
- * RETURNS
- *      number of iterations to reach a solution
- *      resulting x and y values are stored in place
- *---------------------------------------------------------------------*/
-uint8_t solve(float z, uint8_t *x, uint8_t *y)
-{
-    uint8_t y_min = 0;
-    uint8_t y_max = MCP41HVX1_TAP_COUNT - 1;
-    
-    // Solve for the X value that puts us just above the target
-    *x = coarse(z);
-
-    // Search for the Y value that gets us to the target
-    for(uint8_t i = 0; i < 8; i++)
-    {
-        *y = (y_max + y_min) / 2;
-        float f = freq(*x, *y);
 #ifdef DEBUG_PRINTOUT
-        Serial.print("Step "); Serial.print(i); Serial.print(", y = "); Serial.print(*y); Serial.print(" ("); Serial.print(y_min); Serial.print(", "); Serial.print(y_max); Serial.print("), f = "); Serial.println(f);
+    Serial.print("Target: "); Serial.print(target);
+    Serial.print(" ("); Serial.print(target_freq); Serial.println(" Hz)");
+    Serial.print("%% change: "); Serial.println(target_percent);
+    print_status();
 #endif
-        if (z < f)
-        {
-            // The target value is below us. Set upper bound to current value
-            y_max = *y;
-        }
-        else if (z > f)
-        {
-            // The target value is above us. Set lower bound to current value
-            y_min = *y;
-        }
-        else
-        {
-            // We have exactly found the target (unlikely)
-            return i;
-        }
-    }
-    return 8;
 }
 
-/*---------------------------------------------------------------------*
- *  NAME
- *      freq
- *
- *  DESCRIPTION
- *      calculates the output frequency for a given coarse and fine value
- *---------------------------------------------------------------------*/
-float freq(uint8_t x, uint8_t y)
-{
-    /* Equation for 5k-(5k||1.5k) pot */
-    return 0.6351428 + (0.0048308 * (float)x) + (-0.0001811 + 9e-07 * (float)x + 1.2e-06 * (float)y) * (float)y;
-}
-
-/*---------------------------------------------------------------------*
- *  NAME
- *      coarse
- *
- *  DESCRIPTION
- *      calculates the coarse pot setting that is just above the given frequency
- *      Fine = 255
- *---------------------------------------------------------------------*/
-uint8_t coarse(float z)
-{
-    /* Equation for 5k-(5k||1.5k) pot */
-    float c = ceil(197.617 * z - 131.809);
-    if (c < 0)
-    {
-        return 0;
-    }
-    if (c > MCP41HVX1_TAP_COUNT - 1)
-    {
-        return MCP41HVX1_TAP_COUNT - 1;
-    }
-    return (uint8_t)c;
-}
 
 /*---------------------------------------------------------------------*
  *  NAME
  *      single
  *
  *  DESCRIPTION
- *      calculates the sigle pot setting that is close to the target frequency
+ *      calculates the potentiometer setting needed to acheive
+ *      the given percent change in frequency
  *---------------------------------------------------------------------*/
 uint8_t single(float z)
 {
