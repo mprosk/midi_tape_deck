@@ -25,6 +25,7 @@
 /*=====================================================================*
     System-wide Header Files
  *=====================================================================*/
+#include <math.h>
 
 
 /*=====================================================================*
@@ -133,18 +134,22 @@ void print_status(void)
 uint8_t repitch(uint8_t nominal, uint8_t target)
 {
     float t = get_note_freq(target);
-    Serial.print("Target: "); Serial.println(t);
+    Serial.print("Target: "); Serial.print(target);
+    Serial.print(" ("); Serial.print(t); Serial.println("Hz)");
     float freq = t / get_note_freq(nominal);
     Serial.print("% change: "); Serial.println(freq);
-    uint8_t x = 128;
-    uint8_t y = 128;
-    uint8_t n = solve(freq, &x, &y);
-    Serial.print("Solution found in "); Serial.println(n);
-    Serial.print("X = "); Serial.print(x); Serial.print(", Y = "); Serial.println(y);
+    uint8_t x = single(freq);
     mcp41hvx1_set(PIN_POT_COARSE, x);
-    mcp41hvx1_set(PIN_POT_FINE, y);
+
+    // uint8_t x = 128;
+    // uint8_t y = 128;
+    // uint8_t n = solve(freq, &x, &y);
+    // Serial.print("Solution found in "); Serial.println(n);
+    // Serial.print("X = "); Serial.print(x); Serial.print(", Y = "); Serial.println(y);
+    // mcp41hvx1_set(PIN_POT_COARSE, x);
+    // mcp41hvx1_set(PIN_POT_FINE, y);
     print_status();
-    return n;
+    return 1;
 }
 
 /*---------------------------------------------------------------------*
@@ -227,4 +232,28 @@ uint8_t coarse(float z)
         return MCP41HVX1_TAP_COUNT - 1;
     }
     return (uint8_t)c;
+}
+
+/*---------------------------------------------------------------------*
+ *  NAME
+ *      single
+ *
+ *  DESCRIPTION
+ *      calculates the sigle pot setting that is close to the target frequency
+ *---------------------------------------------------------------------*/
+uint8_t single(float z)
+{
+    /* Equation for single 10k pot */
+    float c = ceil(124.42 * z - 61.046);
+    /* Equation for single 5k pot */
+    // float c = ceil(196.08 * z - 132.02);
+    if (c < 0)
+    {
+        return 0;
+    }
+    if (c > MCP41HVX1_TAP_COUNT - 1)
+    {
+        return MCP41HVX1_TAP_COUNT - 1;
+    }
+    return (uint8_t)round(c);
 }

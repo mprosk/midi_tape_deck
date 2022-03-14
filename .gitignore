@@ -3,6 +3,7 @@
 */.idea/
 */__pycache__/
 */.vscode/
+*/*-backups/
 
 # For PCBs designed using KiCad: http://www.kicad-pcb.org/
 # Format documentation: http://kicad-pcb.org/help/file-formats/
@@ -26,4 +27,3 @@ fp-info-cache
 # Autorouter files (exported from Pcbnew)
 *.dsn
 *.ses
-
