@@ -1,4 +1,3 @@
 (sym_lib_table
-  (lib (name midi_tape_deck)(type Legacy)(uri ${KIPRJMOD}/midi_tape_deck.lib)(options "")(descr ""))
-  (lib (name tape_deck_circuit-rescue)(type Legacy)(uri ${KIPRJMOD}/tape_deck_circuit-rescue.lib)(options "")(descr ""))
+  (lib (name "midi_tape_deck")(type "KiCad")(uri "${KIPRJMOD}/midi_tape_deck.kicad_sym")(options "")(descr ""))
 )
