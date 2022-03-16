@@ -1,9 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP SW_4PDT
-D Momentary Switch, dual pole double throw
-K switch dual-pole double-throw spdt ON-ON
-F ~
-$ENDCMP
-#
-#End Doc Library
